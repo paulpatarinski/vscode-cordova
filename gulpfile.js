@@ -11,6 +11,7 @@ var log = require('gulp-util').log;
 var os = require('os');
 var path = require('path');
 var Q = require('q');
+var runSequence = require("run-sequence");
 var typescript = require('typescript');
 
 function executeCordovaCommand(cwd, command) {
@@ -70,7 +71,9 @@ gulp.task('watch', ['build'], function(cb) {
     return gulp.watch(sources, ['build']);
 });
 
-gulp.task('default', ['clean', 'build', 'tslint']);
+gulp.task('default', function(callback) {
+    runSequence('clean', 'build', 'tslint', callback);
+});
 
 // Don't lint code from tsd or common, and whitelist my files under adapter
 var lintSources = [
@@ -78,7 +81,8 @@ var lintSources = [
     'test/**/*.ts',
     'debugger/test/**/*.ts',
     'debugger/webkit/**/*.ts',
-    'debugger/adapter/**/*.ts'
+    'debugger/adapter/**/*.ts',
+    '!test/testProject/**/*.ts'
 ];
 
 var tslint = require('gulp-tslint');

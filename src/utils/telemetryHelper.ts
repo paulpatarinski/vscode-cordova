@@ -69,7 +69,7 @@ export abstract class TelemetryGeneratorBase {
 
     public addError(error: Error): TelemetryGeneratorBase {
         this.add('error.message' + ++this.errorIndex, error.message, /*isPii*/ true);
-        var errorWithErrorCode: IHasErrorCode = <IHasErrorCode> <Object> error;
+        let errorWithErrorCode: IHasErrorCode = <IHasErrorCode> <Object> error;
         if (errorWithErrorCode.errorCode) {
             this.add('error.code' + this.errorIndex, errorWithErrorCode.errorCode, /*isPii*/ false);
         }
@@ -78,12 +78,13 @@ export abstract class TelemetryGeneratorBase {
     }
 
     public time<T>(name: string, codeToMeasure: { (): Thenable<T> }): Q.Promise<T> {
-        var startTime: number[] = process.hrtime();
-        return Q(codeToMeasure()).finally(() => this.finishTime(name, startTime)).fail((reason: any): Q.Promise<T> => {
-            this.addError(reason);
-            throw reason;
-            return null;
-        });
+        let startTime: number[] = process.hrtime();
+        return Q(codeToMeasure())
+            .finally(() => this.finishTime(name, startTime))
+            .fail((reason: any): any => {
+                this.addError(reason);
+                throw reason;
+            });
     }
 
     public step(name: string): TelemetryGeneratorBase {
@@ -108,14 +109,14 @@ export abstract class TelemetryGeneratorBase {
 
     private sendCurrentStep(): void {
         this.add('step', this.currentStep, /*isPii*/ false);
-        var telemetryEvent: Telemetry.TelemetryEvent = new Telemetry.TelemetryEvent(this.componentName);
+        let telemetryEvent: Telemetry.TelemetryEvent = new Telemetry.TelemetryEvent(this.componentName);
         TelemetryHelper.addTelemetryEventProperties(telemetryEvent, this.telemetryProperties);
         this.sendTelemetryEvent(telemetryEvent);
     }
 
     private addArray(baseName: string, array: any[], piiEvaluator: { (value: string, name: string): boolean }): void {
         // Object is an array, we add each element as baseNameNNN
-        var elementIndex: number = 1; // We send telemetry properties in a one-based index
+        let elementIndex: number = 1; // We send telemetry properties in a one-based index
         array.forEach((element: any) => this.addWithPiiEvaluator(baseName + elementIndex++, element, piiEvaluator));
     }
 
@@ -129,12 +130,12 @@ export abstract class TelemetryGeneratorBase {
     }
 
     private combine(...components: string[]): string {
-        var nonNullComponents: string[] = components.filter((component: string) => component !== null);
+        let nonNullComponents: string[] = components.filter((component: string) => component !== null);
         return nonNullComponents.join('.');
     }
 
     private finishTime(name: string, startTime: number[]): void {
-        var endTime: number[] = process.hrtime(startTime);
+        let endTime: number[] = process.hrtime(startTime);
         this.add(this.combine(name, 'time'), String(endTime[0] * 1000 + endTime[1] / 1000000), /*isPii*/ false);
     }
 }
@@ -160,10 +161,10 @@ export class TelemetryHelper {
 
     public static determineProjectTypes(projectRoot: string): Q.Promise<IProjectType> {
         let promiseExists = (file: string) => {
-            var deferred = Q.defer<boolean>();
+            let deferred = Q.defer<boolean>();
             fs.exists(file, (exist: boolean) => deferred.resolve(exist));
             return deferred.promise;
-        }
+        };
 
         let ionic = promiseExists(path.join(projectRoot, 'www', 'lib', 'ionic'));
         let meteor = promiseExists(path.join(projectRoot, '.meteor'));
@@ -191,7 +192,7 @@ export class TelemetryHelper {
     }
 
     public static sendCommandSuccessTelemetry(commandName: string, commandProperties: ICommandTelemetryProperties, args: string[] = null): void {
-        var successEvent: Telemetry.TelemetryEvent = TelemetryHelper.createBasicCommandTelemetry(commandName, args);
+        let successEvent: Telemetry.TelemetryEvent = TelemetryHelper.createBasicCommandTelemetry(commandName, args);
 
         TelemetryHelper.addTelemetryEventProperties(successEvent, commandProperties);
 
@@ -206,12 +207,11 @@ export class TelemetryHelper {
         }
     }
 
-    public static addPropertiesFromOptions(telemetryProperties: ICommandTelemetryProperties, knownOptions: any,
-        commandOptions: { [flag: string]: any }, nonPiiOptions: string[] = []): ICommandTelemetryProperties {
+    public static addPropertiesFromOptions(telemetryProperties: ICommandTelemetryProperties, knownOptions: any, commandOptions: { [flag: string]: any }, nonPiiOptions: string[] = []): ICommandTelemetryProperties {
         // We parse only the known options, to avoid potential private information that may appear on the command line
-        var unknownOptionIndex: number = 1;
+        let unknownOptionIndex: number = 1;
         Object.keys(commandOptions).forEach((key: string) => {
-            var value: any = commandOptions[key];
+            let value: any = commandOptions[key];
             if (Object.keys(knownOptions).indexOf(key) >= 0) {
                 // This is a known option. We'll check the list to decide if it's pii or not
                 if (typeof (value) !== 'undefined') {
@@ -228,18 +228,12 @@ export class TelemetryHelper {
     }
 
     public static generate<T>(name: string, codeGeneratingTelemetry: { (telemetry: TelemetryGenerator): Thenable<T> }): Q.Promise<T> {
-        var generator: TelemetryGenerator = new TelemetryGenerator(name);
+        let generator: TelemetryGenerator = new TelemetryGenerator(name);
         return generator.time(null, () => codeGeneratingTelemetry(generator)).finally(() => generator.send());
     }
 
-    private static addTelemetryProperties(telemetryProperties: ICommandTelemetryProperties, newProps: Telemetry.ITelemetryProperties): void {
-        Object.keys(newProps).forEach(function (propName: string): void {
-            telemetryProperties[propName] = TelemetryHelper.telemetryProperty(newProps[propName]);
-        });
-    }
-
     private static createBasicCommandTelemetry(commandName: string, args: string[] = null): Telemetry.TelemetryEvent {
-        var commandEvent: Telemetry.TelemetryEvent = new Telemetry.TelemetryEvent(commandName || 'command');
+        let commandEvent: Telemetry.TelemetryEvent = new Telemetry.TelemetryEvent(commandName || 'command');
 
         if (!commandName && args && args.length > 0) {
             commandEvent.setPiiProperty('command', args[0]);
@@ -261,7 +255,7 @@ export class TelemetryHelper {
     }
 
     private static addMultiValuedTelemetryEventProperty(event: Telemetry.TelemetryEvent, propertyName: string, propertyValue: string, isPii: boolean): void {
-        for (var i: number = 0; i < propertyValue.length; i++) {
+        for (let i: number = 0; i < propertyValue.length; i++) {
             TelemetryHelper.setTelemetryEventProperty(event, propertyName + i, propertyValue[i], isPii);
         }
     }

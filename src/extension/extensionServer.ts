@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 
-import * as net from "net";
-import * as Q from "q";
-import * as vscode from "vscode";
+import * as net from 'net';
+import * as Q from 'q';
+import * as vscode from 'vscode';
 
 import {
     ErrorMarker,
     ExtensionMessage,
     ExtensionMessageSender,
     MessageWithArguments
-} from "../common/extensionMessaging";
+} from '../common/extensionMessaging';
 
-import {CordovaProjectHelper} from "../utils/cordovaProjectHelper";
-import {Telemetry} from "../utils/telemetry";
+import {CordovaProjectHelper} from '../utils/cordovaProjectHelper';
+import {Telemetry} from '../utils/telemetry';
 
 export class ExtensionServer implements vscode.Disposable {
     private serverInstance: net.Server = null;
@@ -43,7 +43,7 @@ export class ExtensionServer implements vscode.Disposable {
         };
 
         this.serverInstance = net.createServer(this.handleSocket.bind(this));
-        this.serverInstance.on("error", this.recoverServer.bind(this));
+        this.serverInstance.on('error', this.recoverServer.bind(this));
         this.serverInstance.listen(this.pipePath, launchCallback);
 
         return deferred.promise;
@@ -73,10 +73,10 @@ export class ExtensionServer implements vscode.Disposable {
     private handleExtensionMessage(messageWithArgs: MessageWithArguments): Q.Promise<any> {
         let handler = this.messageHandlerDictionary[messageWithArgs.message];
         if (handler) {
-            // Log.logInternalMessage(LogLevel.Info, "Handling message: " + em.ExtensionMessage[messageWithArgs.message]);
+            // Log.logInternalMessage(LogLevel.Info, 'Handling message: ' + em.ExtensionMessage[messageWithArgs.message]);
             return handler.apply(this, messageWithArgs.args);
         } else {
-            return Q.reject("Invalid message: " + messageWithArgs.message);
+            return Q.reject('Invalid message: ' + messageWithArgs.message);
         }
     }
 
@@ -85,7 +85,7 @@ export class ExtensionServer implements vscode.Disposable {
      */
     private handleSocket(socket: net.Socket): void {
         let handleError = (e: any) => {
-            // Log.logError("An error ocurred. ", e);
+            // Log.logError('An error ocurred. ', e);
             socket.end(ErrorMarker);
         };
 
@@ -103,7 +103,7 @@ export class ExtensionServer implements vscode.Disposable {
             }
         };
 
-        socket.on("data", dataCallback);
+        socket.on('data', dataCallback);
     };
 
     /**
@@ -112,16 +112,16 @@ export class ExtensionServer implements vscode.Disposable {
     private recoverServer(error: any): void {
         let errorHandler = (e: any) => {
             /* The named socket is not used. */
-            if (e.code === "ECONNREFUSED") {
+            if (e.code === 'ECONNREFUSED') {
                 CordovaProjectHelper.deleteDirectoryRecursive(this.pipePath);
                 this.serverInstance.listen(this.pipePath);
             }
         };
 
         /* The named socket already exists. */
-        if (error.code === "EADDRINUSE") {
+        if (error.code === 'EADDRINUSE') {
             let clientSocket = new net.Socket();
-            clientSocket.on("error", errorHandler);
+            clientSocket.on('error', errorHandler);
             clientSocket.connect(this.pipePath, function() {
                 clientSocket.end();
             });

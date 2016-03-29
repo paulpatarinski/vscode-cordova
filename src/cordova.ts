@@ -8,16 +8,16 @@ import * as vscode from 'vscode';
 import {CordovaProjectHelper} from './utils/cordovaProjectHelper';
 import {CordovaCommandHelper} from './utils/cordovaCommandHelper';
 import {ExtensionServer} from './extension/extensionServer';
-import * as Q from "q";
+import * as Q from 'q';
 import {Telemetry} from './utils/telemetry';
 import {TelemetryHelper} from './utils/telemetryHelper';
 import {TsdHelper} from './utils/tsdHelper';
 
-let PLUGIN_TYPE_DEFS_FILENAME = "pluginTypings.json";
-let PLUGIN_TYPE_DEFS_PATH = path.resolve(__dirname, "..", "..", PLUGIN_TYPE_DEFS_FILENAME);
-let CORDOVA_TYPINGS_QUERYSTRING = "cordova";
-let JSCONFIG_FILENAME = "jsconfig.json";
-let TSCONFIG_FILENAME = "tsconfig.json";
+let PLUGIN_TYPE_DEFS_FILENAME = 'pluginTypings.json';
+let PLUGIN_TYPE_DEFS_PATH = path.resolve(__dirname, '..', '..', PLUGIN_TYPE_DEFS_FILENAME);
+let CORDOVA_TYPINGS_QUERYSTRING = 'cordova';
+let JSCONFIG_FILENAME = 'jsconfig.json';
+let TSCONFIG_FILENAME = 'tsconfig.json';
 
 export function activate(context: vscode.ExtensionContext): void {
     // Asynchronously enable telemetry
@@ -29,11 +29,13 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
     }
 
-    var activateExtensionEvent = TelemetryHelper.createTelemetryEvent("activate");
+    let activateExtensionEvent = TelemetryHelper.createTelemetryEvent('activate');
 
     TelemetryHelper.determineProjectTypes(cordovaProjectRoot)
         .then((projectType) => {
-            activateExtensionEvent.properties["projectType"] = projectType;
+            /* tslint:disable:no-string-literal */
+            activateExtensionEvent.properties['projectType'] = projectType;
+            /* tslint:disable:no-string-literal */
         })
         .finally(() => {
             Telemetry.send(activateExtensionEvent);
@@ -57,11 +59,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Register Cordova commands
     context.subscriptions.push(vscode.commands.registerCommand('cordova.prepare',
-        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, "prepare")));
+        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, 'prepare')));
     context.subscriptions.push(vscode.commands.registerCommand('cordova.build',
-        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, "build")));
+        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, 'build')));
     context.subscriptions.push(vscode.commands.registerCommand('cordova.run',
-        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, "run")));
+        () => CordovaCommandHelper.executeCordovaCommand(cordovaProjectRoot, 'run')));
 
     let pluginTypings = getPluginTypingsJson();
     if (!pluginTypings) {
@@ -80,16 +82,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
     Q.all([Q.nfcall(fs.exists, jsconfigPath), Q.nfcall(fs.exists, tsconfigPath)]).spread((jsExists: boolean, tsExists: boolean) => {
         if (!jsExists && !tsExists) {
-            Q.nfcall(fs.writeFile, jsconfigPath, "{}").then(() => {
+            Q.nfcall(fs.writeFile, jsconfigPath, '{}').then(() => {
                 // Any open file must be reloaded to enable intellisense on them, so inform the user
-                vscode.window.showInformationMessage("To enable IntelliSense a 'jsconfig.json' file was added to your project. Please close and reopen any active JavaScript file(s).");
+                vscode.window.showInformationMessage('To enable IntelliSense a "jsconfig.json" file was added to your project. Please close and reopen any active JavaScript file(s).');
             });
         }
     });
 }
 
 export function deactivate(context: vscode.ExtensionContext): void {
-    console.log("Extension has been deactivated");
+    console.log('Extension has been deactivated');
 }
 
 function getPluginTypingsJson(): any {
@@ -97,12 +99,11 @@ function getPluginTypingsJson(): any {
         return require(PLUGIN_TYPE_DEFS_PATH);
     }
 
-    console.error("Cordova plugin type declaration mapping file \"pluginTypings.json\" is missing from the extension folder.");
+    console.error('Cordova plugin type declaration mapping file "pluginTypings.json" is missing from the extension folder.');
     return null;
 }
 
 function getNewTypeDefinitions(installedPlugins: string[]): string[] {
-    let newTypeDefs: string[] = [];
     let pluginTypings = getPluginTypingsJson();
     if (!pluginTypings) {
         return;
@@ -139,11 +140,11 @@ function removePluginTypeDefinitions(projectRoot: string, currentTypeDefs: strin
     // Find the type definition files that need to be removed
     currentTypeDefs.forEach((typeDef: string) => {
         if (newTypeDefs.indexOf(typeDef) < 0) {
-            var fileToDelete = path.resolve(CordovaProjectHelper.getOrCreateTypingsTargetPath(projectRoot), typeDef);
+            let fileToDelete = path.resolve(CordovaProjectHelper.getOrCreateTypingsTargetPath(projectRoot), typeDef);
             fs.unlink(fileToDelete, (err: Error) => {
                 if (err) {
                     // Debug-only message
-                    console.log("Failed to delete file " + fileToDelete);
+                    console.log('Failed to delete file ' + fileToDelete);
                 }
             });
         }
@@ -151,7 +152,7 @@ function removePluginTypeDefinitions(projectRoot: string, currentTypeDefs: strin
 }
 
 function getRelativeTypeDefinitionFilePath(projectRoot: string, parentPath: string, typeDefinitionFile: string) {
-    return path.relative(CordovaProjectHelper.getOrCreateTypingsTargetPath(projectRoot), path.resolve(parentPath, typeDefinitionFile)).replace(/\\/g, "\/")
+    return path.relative(CordovaProjectHelper.getOrCreateTypingsTargetPath(projectRoot), path.resolve(parentPath, typeDefinitionFile)).replace(/\\/g, '\/');
 }
 
 function updatePluginTypeDefinitions(cordovaProjectRoot: string): void {
@@ -174,7 +175,7 @@ function updatePluginTypeDefinitions(cordovaProjectRoot: string): void {
         }
 
         // Now read the type definitions of Ionic plugins
-        fs.readdir(ionicPluginTypesFolder, (err: Error, ionicTypeDefs: string[]) => {
+        fs.readdir(ionicPluginTypesFolder, (innerErr: Error, ionicTypeDefs: string[]) => {
             if (ionicTypeDefs) {
                 currentTypeDefs.concat(ionicTypeDefs.map(typeDef => getRelativeTypeDefinitionFilePath(cordovaProjectRoot, ionicPluginTypesFolder, typeDef)));
             }

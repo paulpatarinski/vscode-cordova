@@ -1,20 +1,19 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 
-import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Q from 'q';
 
 export class CordovaProjectHelper {
-    private static PROJECT_TYPINGS_FOLDERNAME =  "typings";
-    private static PROJECT_TYPINGS_PLUGINS_FOLDERNAME =  "plugins";
-    private static PROJECT_TYPINGS_CORDOVA_FOLDERNAME =  "cordova";
-    private static PROJECT_TYPINGS_CORDOVA_IONIC_FOLDERNAME =  "cordova-ionic";
-    private static VSCODE_DIR: string = ".vscode";
-    private static PLUGINS_FETCH_FILENAME: string = "fetch.json";
-    private static CONFIG_XML_FILENAME: string = "config.xml";
-    private static PROJECT_PLUGINS_DIR: string = "plugins";
+    private static PROJECT_TYPINGS_FOLDERNAME =  'typings';
+    private static PROJECT_TYPINGS_PLUGINS_FOLDERNAME =  'plugins';
+    private static PROJECT_TYPINGS_CORDOVA_FOLDERNAME =  'cordova';
+    private static PROJECT_TYPINGS_CORDOVA_IONIC_FOLDERNAME =  'cordova-ionic';
+    private static VSCODE_DIR: string = '.vscode';
+    private static PLUGINS_FETCH_FILENAME: string = 'fetch.json';
+    private static CONFIG_XML_FILENAME: string = 'config.xml';
+    private static PROJECT_PLUGINS_DIR: string = 'plugins';
 
     /**
      *  Helper function check if a file exists.
@@ -29,27 +28,26 @@ export class CordovaProjectHelper {
         }
     }
 
-
     /**
      *  Helper (synchronous) function to create a directory recursively
      */
     public static makeDirectoryRecursive(dirPath: string): void {
         let parentPath = path.dirname(dirPath);
-        if(!CordovaProjectHelper.existsSync(parentPath)) {
+        if (!CordovaProjectHelper.existsSync(parentPath)) {
             CordovaProjectHelper.makeDirectoryRecursive(parentPath);
         }
 
-        fs.mkdirSync(dirPath)
+        fs.mkdirSync(dirPath);
     }
 
     /**
      *  Helper (synchronous) function to delete a directory recursively
      */
     public static deleteDirectoryRecursive (dirPath: string) {
-        if(fs.existsSync(dirPath)) {
-            fs.readdirSync(dirPath).forEach(function(file){
-                var curPath = path.join(dirPath, file);
-                if(fs.lstatSync(curPath).isDirectory()) {
+        if (fs.existsSync(dirPath)) {
+            fs.readdirSync(dirPath).forEach(function (file) {
+                let curPath = path.join(dirPath, file);
+                if (fs.lstatSync(curPath).isDirectory()) {
                     CordovaProjectHelper.deleteDirectoryRecursive(curPath);
                 } else {
                     fs.unlinkSync(curPath);
@@ -63,18 +61,18 @@ export class CordovaProjectHelper {
      *  Helper function to asynchronously copy a file
      */
     public static copyFile(from: string, to: string, encoding?: string): Q.Promise<any> {
-        var deferred: Q.Deferred<any> = Q.defer();
-        var destFile: fs.WriteStream = fs.createWriteStream(to, { encoding: encoding });
-        var srcFile: fs.ReadStream = fs.createReadStream(from, { encoding: encoding });
-        destFile.on("finish", function(): void {
+        let deferred: Q.Deferred<any> = Q.defer();
+        let destFile: fs.WriteStream = fs.createWriteStream(to, { encoding: encoding });
+        let srcFile: fs.ReadStream = fs.createReadStream(from, { encoding: encoding });
+        destFile.on('finish', function(): void {
             deferred.resolve({});
         });
 
-        destFile.on("error", function(e: Error): void {
+        destFile.on('error', function(e: Error): void {
             deferred.reject(e);
         });
 
-        srcFile.on("error", function(e: Error): void {
+        srcFile.on('error', function(e: Error): void {
             deferred.reject(e);
         });
 
@@ -112,7 +110,7 @@ export class CordovaProjectHelper {
         let atFsRoot: boolean = false;
         while (!CordovaProjectHelper.existsSync(path.join(projectRoot, CordovaProjectHelper.CONFIG_XML_FILENAME))) {
             // Navigate up one level until either config.xml is found
-            parentPath = path.resolve(projectRoot, "..");
+            parentPath = path.resolve(projectRoot, '..');
             if (parentPath !== projectRoot) {
                 projectRoot = parentPath;
             } else {
@@ -137,7 +135,7 @@ export class CordovaProjectHelper {
     public static getOrCreateTypingsTargetPath(projectRoot: string): string {
         if (projectRoot) {
            let targetPath = path.resolve(projectRoot, CordovaProjectHelper.VSCODE_DIR, CordovaProjectHelper.PROJECT_TYPINGS_FOLDERNAME);
-           if(!CordovaProjectHelper.existsSync(targetPath)) {
+           if (!CordovaProjectHelper.existsSync(targetPath)) {
                CordovaProjectHelper.makeDirectoryRecursive(targetPath);
            }
 

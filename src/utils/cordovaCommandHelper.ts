@@ -9,22 +9,22 @@ import {window} from 'vscode';
 import {TelemetryHelper} from './telemetryHelper';
 
 export class CordovaCommandHelper {
-    private static CORDOVA_CMD_NAME = os.platform() === "darwin" ? "cordova" : "cordova.cmd";
+    private static CORDOVA_CMD_NAME = os.platform() === 'darwin' ? 'cordova' : 'cordova.cmd';
 
     public static executeCordovaCommand(projectRoot: string, command: string) {
         TelemetryHelper.generate('cordovaCommand', (generator) => {
             generator.add('command', command, false);
-            let outputChannel = window.createOutputChannel("cordova");
-            let commandToExecute = CordovaCommandHelper.CORDOVA_CMD_NAME + " " + command;
-            outputChannel.appendLine("########### EXECUTING: " + commandToExecute + " ###########");
+            let outputChannel = window.createOutputChannel('cordova');
+            let commandToExecute = CordovaCommandHelper.CORDOVA_CMD_NAME + ' ' + command;
+            outputChannel.appendLine('########### EXECUTING: ' + commandToExecute + ' ###########');
             outputChannel.show();
             let process = child_process.exec(commandToExecute, {cwd: projectRoot});
 
             let deferred = Q.defer();
-            process.on("error", (err: any) => {
+            process.on('error', (err: any) => {
             // ENOENT error will be thrown if no Cordova.cmd is found
-                if (err.code === "ENOENT") {
-                    window.showErrorMessage("Cordova not found, please run 'npm install –g cordova' to install Cordova globally");
+                if (err.code === 'ENOENT') {
+                    window.showErrorMessage('Cordova not found, please run "npm install –g cordova" to install Cordova globally');
                 }
                 deferred.reject(err);
             });
@@ -37,8 +37,8 @@ export class CordovaCommandHelper {
                 outputChannel.append(data);
             });
 
-            process.stdout.on("close", (exitCode: number) => {
-                outputChannel.appendLine("########### FINISHED EXECUTING : " + commandToExecute + " ###########");
+            process.stdout.on('close', (exitCode: number) => {
+                outputChannel.appendLine('########### FINISHED EXECUTING : ' + commandToExecute + ' ###########');
                 deferred.resolve({});
             });
 

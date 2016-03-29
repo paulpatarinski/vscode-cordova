@@ -293,6 +293,7 @@
     "mocha": "^2.3.3",
     "mockery": "^1.4.0",
     "rimraf": "^2.5.0",
+    "run-sequence": "^1.1.5",
     "should": "^4.6.5",
     "sinon": "^1.17.2",
     "tslint": "^2.5.1",

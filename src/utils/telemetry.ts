@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as Q from 'q';
-import * as readline from 'readline';
 import * as winreg from 'winreg';
 
 import {
@@ -19,11 +18,13 @@ import {
 /**
  * Telemetry module specialized for vscode integration.
  */
+/* tslint:disable:no-internal-module */
 export module Telemetry {
-        export var appName: string;
-        export var isOptedIn: boolean = false;
-        export var reporter: ITelemetryReporter;
-        export var reporterDictionary: {[key: string]: ITelemetryReporter} = {};
+/* tslint:enable:no-internal-module */
+        export let appName: string;
+        export let isOptedIn: boolean = false;
+        export let reporter: ITelemetryReporter;
+        export let reporterDictionary: {[key: string]: ITelemetryReporter} = {};
 
         export interface ITelemetryProperties {
             [propertyName: string]: any;
@@ -46,8 +47,8 @@ export module Telemetry {
             }
 
             public setPiiProperty(name: string, value: string): void {
-                var hmac: any = crypto.createHmac('sha256', new Buffer(TelemetryEvent.PII_HASH_KEY, 'utf8'));
-                var hashedValue: any = hmac.update(value).digest('hex');
+                let hmac: any = crypto.createHmac('sha256', new Buffer(TelemetryEvent.PII_HASH_KEY, 'utf8'));
+                let hashedValue: any = hmac.update(value).digest('hex');
 
                 this.properties[name] = hashedValue;
 
@@ -108,18 +109,18 @@ export module Telemetry {
                     }
 
                     if (Telemetry.reporter) {
-                        var properties: ITelemetryEventProperties = {};
-                        var measures: ITelemetryEventMeasures = {};
+                        let properties: ITelemetryEventProperties = {};
+                        let measures: ITelemetryEventMeasures = {};
 
-                        for (var key in event.properties) {
-                            var propertyValue = event.properties[key];
+                        Object.keys(event.properties).forEach(function (key: string) {
+                            let propertyValue = event.properties[key];
 
                             switch (typeof propertyValue) {
-                                case "string":
+                                case 'string':
                                     properties[key] = <string>propertyValue;
                                     break;
 
-                                case "number":
+                                case 'number':
                                     measures[key] = <number>propertyValue;
                                     break;
 
@@ -127,7 +128,7 @@ export module Telemetry {
                                     properties[key] = JSON.stringify(propertyValue);
                                     break;
                             }
-                        };
+                        });
 
                         Telemetry.reporter.sendTelemetryEvent(event.name, properties, measures);
                     }
@@ -176,13 +177,17 @@ export module Telemetry {
             private static get settingsHome(): string {
                 switch (os.platform()) {
                     case 'win32':
+                        /* tslint:disable:no-string-literal */
                         return path.join(process.env['APPDATA'], 'vscode-cordova');
+                        /* tslint:enable:no-string-literal */
                     case 'darwin':
                     case 'linux':
+                        /* tslint:disable:no-string-literal */
                         return path.join(process.env['HOME'], '.vscode-cordova');
+                        /* tslint:enable:no-string-literal */
                     default:
                         throw new Error('UnexpectedPlatform');
-                };
+                }
             }
 
             private static get telemetrySettingsFile(): string {
@@ -195,8 +200,7 @@ export module Telemetry {
                 if (initOptions.isExtensionProcess) {
                     let TelemetryReporter = require('vscode-extension-telemetry').default;
                     Telemetry.reporter = new TelemetryReporter(Telemetry.appName, appVersion, TelemetryUtils.APPINSIGHTS_INSTRUMENTATIONKEY);
-                }
-                else {
+                } else {
                     Telemetry.reporter = new ExtensionTelemetryReporter(Telemetry.appName, appVersion, TelemetryUtils.APPINSIGHTS_INSTRUMENTATIONKEY);
                 }
 
@@ -219,18 +223,18 @@ export module Telemetry {
             }
 
             public static generateGuid(): string {
-                var hexValues: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+                let hexValues: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
                 // c.f. rfc4122 (UUID version 4 = xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx)
-                var oct: string = '';
-                var tmp: number;
+                let oct: string = '';
+                let tmp: number;
                 /* tslint:disable:no-bitwise */
-                for (var a: number = 0; a < 4; a++) {
+                for (let a: number = 0; a < 4; a++) {
                     tmp = (4294967296 * Math.random()) | 0;
                     oct += hexValues[tmp & 0xF] + hexValues[tmp >> 4 & 0xF] + hexValues[tmp >> 8 & 0xF] + hexValues[tmp >> 12 & 0xF] + hexValues[tmp >> 16 & 0xF] + hexValues[tmp >> 20 & 0xF] + hexValues[tmp >> 24 & 0xF] + hexValues[tmp >> 28 & 0xF];
                 }
 
                 // 'Set the two most significant bits (bits 6 and 7) of the clock_seq_hi_and_reserved to zero and one, respectively'
-                var clockSequenceHi: string = hexValues[8 + (Math.random() * 4) | 0];
+                let clockSequenceHi: string = hexValues[8 + (Math.random() * 4) | 0];
                 return oct.substr(0, 8) + '-' + oct.substr(9, 4) + '-4' + oct.substr(13, 3) + '-' + clockSequenceHi + oct.substr(16, 3) + '-' + oct.substr(19, 12);
                 /* tslint:enable:no-bitwise */
             }
@@ -245,13 +249,15 @@ export module Telemetry {
             }
 
             private static getUserType(): string {
-                var userType: string = TelemetryUtils.telemetrySettings.userType;
+                let userType: string = TelemetryUtils.telemetrySettings.userType;
 
                 if (userType === undefined) {
                     if (process.env[TelemetryUtils.INTERNAL_USER_ENV_VAR]) {
                         userType = TelemetryUtils.USERTYPE_INTERNAL;
                     } else if (os.platform() === 'win32') {
-                        var domain: string = process.env['USERDNSDOMAIN'];
+                        /* tslint:disable:no-string-literal */
+                        let domain: string = process.env['USERDNSDOMAIN'];
+                        /* tslint:enable:no-string-literal */
                         domain = domain ? domain.toLowerCase().substring(domain.length - TelemetryUtils.INTERNAL_DOMAIN_SUFFIX.length) : null;
                         userType = domain === TelemetryUtils.INTERNAL_DOMAIN_SUFFIX ? TelemetryUtils.USERTYPE_INTERNAL : TelemetryUtils.USERTYPE_EXTERNAL;
                     } else {
@@ -265,8 +271,8 @@ export module Telemetry {
             }
 
             private static getRegistryValue(key: string, value: string, hive: string): Q.Promise<string> {
-                var deferred: Q.Deferred<string> = Q.defer<string>();
-                var regKey = new winreg({
+                let deferred: Q.Deferred<string> = Q.defer<string>();
+                let regKey = new winreg({
                                         hive: hive,
                                         key:  key
                                 });
@@ -274,8 +280,7 @@ export module Telemetry {
                     if (err) {
                         // Fail gracefully by returning null if there was an error.
                         deferred.resolve(null);
-                    }
-                    else {
+                    } else {
                         deferred.resolve(itemValue.value);
                     }
                 });
@@ -309,8 +314,7 @@ export module Telemetry {
             }
 
             private static getUniqueId(regValue: string, regHive: string, fallback: () => string): Q.Promise<any> {
-                var uniqueId: string;
-                var deferred: Q.Deferred<string> = Q.defer<string>();
+                let uniqueId: string;
                 if (os.platform() === 'win32') {
                     return TelemetryUtils.getRegistryValue(TelemetryUtils.REGISTRY_SQMCLIENT_NODE, regValue, regHive)
                     .then(function(id: string): Q.Promise<string> {
@@ -327,7 +331,7 @@ export module Telemetry {
             }
 
             private static getUserId(): Q.Promise<string> {
-                var userId: string = TelemetryUtils.telemetrySettings.userId;
+                let userId: string = TelemetryUtils.telemetrySettings.userId;
                 if (!userId) {
                     return TelemetryUtils.getUniqueId(TelemetryUtils.REGISTRY_USERID_VALUE, winreg.HKCU, TelemetryUtils.generateGuid)
                     .then(function(id: string): Q.Promise<string> {
@@ -366,7 +370,7 @@ export module Telemetry {
                 this.extensionMessageSender = new ExtensionMessageSender();
             }
 
-            sendTelemetryEvent(eventName: string, properties?: ITelemetryEventProperties, measures?: ITelemetryEventMeasures) {
+            public sendTelemetryEvent(eventName: string, properties?: ITelemetryEventProperties, measures?: ITelemetryEventMeasures): void {
                 this.extensionMessageSender.sendMessage(ExtensionMessage.SEND_TELEMETRY, [this.extensionId, this.extensionVersion, this.appInsightsKey, eventName, properties, measures])
                 .catch(function(){})
                 .done();
@@ -374,14 +378,14 @@ export module Telemetry {
         }
 
         export function sendExtensionTelemetry(extensionId: string, extensionVersion: string, appInsightsKey: string, eventName: string, properties: ITelemetryEventProperties, measures: ITelemetryEventMeasures): void {
-            let reporter: ITelemetryReporter = Telemetry.reporterDictionary[extensionId];
+            let extensionTelemetryReporter: ITelemetryReporter = Telemetry.reporterDictionary[extensionId];
 
-            if (!reporter) {
+            if (!extensionTelemetryReporter) {
                 let TelemetryReporter = require('vscode-extension-telemetry').default;
                 Telemetry.reporterDictionary[extensionId] = new TelemetryReporter(extensionId, extensionVersion, appInsightsKey);
-                reporter = Telemetry.reporterDictionary[extensionId];
+                extensionTelemetryReporter = Telemetry.reporterDictionary[extensionId];
             }
 
-            reporter.sendTelemetryEvent(eventName, properties, measures);
+            extensionTelemetryReporter.sendTelemetryEvent(eventName, properties, measures);
         }
     };

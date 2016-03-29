@@ -7,8 +7,8 @@ import {TelemetryHelper} from './telemetryHelper';
 import {CordovaProjectHelper} from './cordovaProjectHelper';
 
 export class TsdHelper {
-   private static CORDOVA_TYPINGS_FOLDERNAME =  "CordovaTypings";
-   private static CORDOVA_TYPINGS_PATH =  path.resolve(__dirname, "..", "..", "..", TsdHelper.CORDOVA_TYPINGS_FOLDERNAME);
+   private static CORDOVA_TYPINGS_FOLDERNAME =  'CordovaTypings';
+   private static CORDOVA_TYPINGS_PATH =  path.resolve(__dirname, '..', '..', '..', TsdHelper.CORDOVA_TYPINGS_FOLDERNAME);
 
    private static installTypeDefinitionFile(src: string, dest: string): Q.Promise<any> {
        if (CordovaProjectHelper.existsSync(dest)) {
@@ -16,7 +16,7 @@ export class TsdHelper {
        }
 
        // Ensure that the parent folder exits; if not, create the hierarchy of directories
-       let parentFolder = path.resolve(dest, "..");
+       let parentFolder = path.resolve(dest, '..');
        if (!CordovaProjectHelper.existsSync(parentFolder)) {
            CordovaProjectHelper.makeDirectoryRecursive(parentFolder);
        }
