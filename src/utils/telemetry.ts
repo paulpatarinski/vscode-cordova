@@ -112,7 +112,7 @@ export module Telemetry {
                         let properties: ITelemetryEventProperties = {};
                         let measures: ITelemetryEventMeasures = {};
 
-                        Object.keys(event.properties).forEach(function (key: string) {
+                        Object.keys(event.properties || {}).forEach(function (key: string) {
                             let propertyValue = event.properties[key];
 
                             switch (typeof propertyValue) {
