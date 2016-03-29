@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 
 var child_process = require('child_process');
+var del = require('del');
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var sourcemaps = require('gulp-sourcemaps');
@@ -34,15 +35,13 @@ function executeCordovaCommand(cwd, command) {
 }
 
 var sources = [
-    'src',
-    'test/debugger',
-    'typings',
-    'debugger/adapter',
-    'debugger/common',
-    'debugger/test',
-    'debugger/webkit',
-].map(function(tsFolder) { return tsFolder + '/**/*.ts'; })
-.concat(['test/*.ts']);
+    'src/**/*.ts',
+    'test/**/*.ts',
+    '!test/testProject/**/*.ts',
+    'typings/**/*.ts',
+    'debugger/**/*.ts',
+    '!debugger/testapp/**/*.ts'
+];
 
 var projectConfig = {
     noImplicitAny: false,
@@ -60,31 +59,27 @@ gulp.task('build', function () {
         .pipe(gulp.dest('out'));
 });
 
+gulp.task('clean', function() {
+    return del([
+        'out/**/*'
+    ]);
+});
+
 gulp.task('watch', ['build'], function(cb) {
     log('Watching build sources...');
     return gulp.watch(sources, ['build']);
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['clean', 'build', 'tslint']);
 
 // Don't lint code from tsd or common, and whitelist my files under adapter
 var lintSources = [
-    'src/cordova.ts',
-    'src/utils/cordovaCommandHelper.ts',
-    'src/utils/cordovaProjectHelper.ts',
-    'src/utils/tsdHelper.ts',
-    'src/debugger',
-    'test/debugger',
-    'debugger/test',
-    'debugger/test',
-    'debugger/webkit',
-].map(function(tsFolder) { return tsFolder + '/**/*.ts'; });
-lintSources = lintSources.concat([
-    'debugger/adapter/sourceMaps/sourceMapTransformer.ts',
-    'debugger/adapter/adapterProxy.ts',
-    'debugger/adapter/lineNumberTransformer.ts',
-    'debugger/adapter/pathTransformer.ts',
-]);
+    'src/**/*.ts',
+    'test/**/*.ts',
+    'debugger/test/**/*.ts',
+    'debugger/webkit/**/*.ts',
+    'debugger/adapter/**/*.ts'
+];
 
 var tslint = require('gulp-tslint');
 gulp.task('tslint', function(){
